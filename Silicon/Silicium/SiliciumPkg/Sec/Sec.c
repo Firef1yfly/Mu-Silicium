@@ -16,6 +16,12 @@
 #include <Library/TimerLib.h>
 #include <Library/HobLib.h>
 
+UINT64 mEntryArg = 0;
+
+STATIC CONST EFI_GUID mEntryArgHobGuid = {
+  0xDAEE82E6, 0x8090, 0x4E72, { 0xBF, 0xB9, 0x78, 0xC1, 0x3C, 0xD4, 0xE3, 0x59 }
+};
+
 #include "Sec.h"
 
 #ifndef MDEPKG_NDEBUG
@@ -90,7 +96,9 @@ InitializeMemory (VOID)
 
 STATIC
 VOID
-SecMain (VOID)
+SecMain (
+  IN UINT64  Arg0
+  )
 {
   EFI_STATUS Status;
 
@@ -117,6 +125,9 @@ SecMain (VOID)
   if (EFI_ERROR (Status)) {
     return;
   }
+
+  // Store x0 (DTB address) in HOB for UniXNURamDiskDxe
+  BuildGuidDataHob (&mEntryArgHobGuid, &Arg0, sizeof (UINT64));
 
   // Build CPU HOB
   BuildCpuHob (ArmGetPhysicalAddressBits (), PcdGet8 (PcdPrePiCpuIoSize));
@@ -148,7 +159,9 @@ SecMain (VOID)
 }
 
 VOID
-SecEntry (VOID)
+SecEntry (
+  IN UINT64  Arg0
+  )
 {
   // Disable Data Cache
   ArmDisableDataCache ();
@@ -170,5 +183,5 @@ SecEntry (VOID)
   ArmWriteVBar ((UINTN)SecVectorTable);
 
   // Enter Main SEC Function
-  SecMain ();
+  SecMain (Arg0);
 }

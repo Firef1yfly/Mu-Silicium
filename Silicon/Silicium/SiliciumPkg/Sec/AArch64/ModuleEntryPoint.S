@@ -13,6 +13,9 @@
 .set CTRL_SPAN_BIT, BIT23
 
 ASM_FUNC (_ModuleEntryPoint)
+  // Save x0 (DTB address) to x19 (callee-saved) before it gets clobbered
+  mov   x19, x0
+
   // Do Platform Specific Initialization
   bl    ASM_PFX (PlatformAssemblyInitialize)
 
@@ -50,14 +53,17 @@ ASM_PFX (MainEntryPoint):
   cmp   x0, x2
   b.lt  0b
 
-  // Set Jump Location
-  ldr   x0, =ASM_PFX (SecEntry)
+  // Set Jump Location (use x20 to preserve SecEntry address)
+  ldr   x20, =ASM_PFX (SecEntry)
 
   // Clear Frame Pointer
   mov   x29, xzr
 
+  // Restore x0 (DTB address) as first argument to SecEntry
+  mov   x0, x19
+
   // Jump to C Code
-  blr   x0
+  blr   x20
 
   // Do Infinite Spin
   b     .

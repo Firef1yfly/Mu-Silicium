@@ -10,6 +10,11 @@ VOID
 SecVectorTable ();
 
 VOID
+SecEntry (
+  IN UINT64  Arg0
+  );
+
+VOID
 SecCommonExceptionEntry (
   IN UINT32 Type,
   IN UINTN  LR
