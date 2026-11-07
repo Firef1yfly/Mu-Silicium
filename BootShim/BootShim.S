@@ -17,6 +17,11 @@ _StackSize:
 #endif
 
 _Start:
+  /* Unconditionally use the appended DTB at _Payload + FD_SIZE.
+     The bootloader-supplied x0 points at its own FDT which lacks
+     linux,initrd-start, so force the DTB that ships in boot.img. */
+  ldr   x2, =FD_SIZE
+  add   x0, x1, x2
   mov   x4, x1
   ldr   x5, =FD_BASE
   cmp   x4, x5
